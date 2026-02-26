@@ -47,6 +47,11 @@ public class RendezVousController {
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @GetMapping(value = "/notification-health", produces = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<String> notificationHealth() {
+        return new ResponseEntity<>(rendezVousService.checkNotificationService(), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         return rendezVousService.deleteById(id)

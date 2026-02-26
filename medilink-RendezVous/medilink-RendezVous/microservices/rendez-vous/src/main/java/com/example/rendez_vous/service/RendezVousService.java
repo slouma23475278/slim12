@@ -49,6 +49,17 @@ public class RendezVousService {
         return true;
     }
 
+    public String checkNotificationService() {
+        try {
+            if (notificationClient != null) {
+                return notificationClient.ping();
+            }
+            return "notification-client-not-configured";
+        } catch (Exception ex) {
+            return "notification-unreachable";
+        }
+    }
+
     private void notifyIfAvailable() {
         try {
             if (notificationClient != null) {

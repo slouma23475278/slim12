@@ -68,3 +68,11 @@ services:
       - "8090:8090"
     depends_on:
       - postgres
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "4173:4173"
+    depends_on:
+      - gateway
+      - lab-node-service

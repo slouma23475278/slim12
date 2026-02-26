@@ -1,4 +1,4 @@
-# 📆 Medilink Microservices (Version améliorée)
+# 📆 Medilink Microservices (Presentation-ready pack)
 
 Ce dépôt contient une architecture distribuée avec :
 
@@ -8,8 +8,9 @@ Ce dépôt contient une architecture distribuée avec :
 - Serveur de configuration Spring Cloud Config
 - Communication inter-MS via Feign (`rendez-vous` -> `notification`)
 - Microservice additionnel **Node.js + PostgreSQL** (`lab-node-service`)
-- Base de sécurité Gateway compatible Keycloak (activable)
-- Docker Compose pour lancer l’écosystème principal
+- Sécurité Gateway compatible Keycloak (activable)
+- Front-end React (`frontend`) qui consomme le back
+- Docker Compose + scripts de smoke test
 
 ---
 
@@ -17,8 +18,22 @@ Ce dépôt contient une architecture distribuée avec :
 
 - Java 17
 - Maven 3.9+
-- Node.js 20+ (pour `lab-node-service` en local sans Docker)
-- Docker + Docker Compose (option recommandé)
+- Node.js 20+
+- Docker + Docker Compose
+
+---
+
+## 🚀 Démarrage Docker (recommandé démo)
+
+```bash
+./scripts/run-docker-demo.sh
+```
+
+Puis vérifier :
+
+```bash
+./scripts/smoke-test.sh
+```
 
 ---
 
@@ -35,34 +50,30 @@ Ordre recommandé :
 7. `microservices/paiement`
 8. `microservices/user`
 9. `microservices/gateway/getway`
+10. `microservices/lab-node-service`
+11. `frontend`
 
-Commande standard dans chaque dossier :
+Dans chaque service Spring:
 
 ```bash
 mvn spring-boot:run
 ```
 
-### Lancer le microservice Node + PostgreSQL
+Node service:
 
 ```bash
-# PostgreSQL (Docker rapide)
-docker run --name medilink-pg -e POSTGRES_DB=medilink -e POSTGRES_USER=medilink -e POSTGRES_PASSWORD=medilink -p 5432:5432 -d postgres:16
-
-# Node service
 cd microservices/lab-node-service
 npm install
 node index.js
 ```
 
----
-
-## 🐳 Démarrage dockerisé
+Front:
 
 ```bash
-docker compose up --build
+cd frontend
+npm install
+npm run dev
 ```
-
-Fichier: `docker-compose.yml`.
 
 ---
 
@@ -71,8 +82,8 @@ Fichier: `docker-compose.yml`.
 La sécurité Gateway est prête mais désactivée par défaut.
 
 - `security.keycloak.enabled=false` (par défaut)
-- Pour activer: passer à `true` et démarrer Keycloak (`http://localhost:8180`)
-- Issuer URI configuré pour le realm `medilink`
+- Pour activer: passer à `true` dans `gateway/application.properties`
+- Issuer URI: `http://localhost:8180/realms/medilink`
 
 ---
 
@@ -86,15 +97,7 @@ GET    /rendezvous/{id}
 POST   /rendezvous
 PUT    /rendezvous/{id}
 DELETE /rendezvous/{id}
-```
-
-Exemple payload :
-
-```json
-{
-  "date": "2026-02-25T10:30:00",
-  "status": "CONFIRMED"
-}
+GET    /rendezvous/notification-health
 ```
 
 ### Notification (utilisé par Feign)
@@ -111,6 +114,12 @@ GET  /notes
 POST /notes
 ```
 
+### Front-end React
+
+```http
+GET http://localhost:4173
+```
+
 ---
 
 ## 🌐 Ports
@@ -125,6 +134,7 @@ POST /notes
 - Paiement: `8070`
 - User: `8081`
 - Node service: `8090`
+- Frontend: `4173`
 - PostgreSQL: `5432`
 - Keycloak: `8180`
 
