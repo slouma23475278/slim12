@@ -1,5 +1,6 @@
 package com.example.rendez_vous.service;
 
+import com.example.rendez_vous.client.NotificationClient;
 import com.example.rendez_vous.entity.RendezVous;
 import com.example.rendez_vous.repository.RendezVousRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,9 @@ public class RendezVousService {
     @Autowired
     private RendezVousRepository rendezVousRepository;
 
+    @Autowired(required = false)
+    private NotificationClient notificationClient;
+
     public List<RendezVous> findAll() {
         return rendezVousRepository.findAll();
     }
@@ -22,14 +26,18 @@ public class RendezVousService {
     }
 
     public RendezVous save(RendezVous rendezVous) {
-        return rendezVousRepository.save(rendezVous);
+        RendezVous created = rendezVousRepository.save(rendezVous);
+        notifyIfAvailable();
+        return created;
     }
 
     public Optional<RendezVous> update(Long id, RendezVous payload) {
         return rendezVousRepository.findById(id).map(existing -> {
             existing.setDate(payload.getDate());
             existing.setStatus(payload.getStatus());
-            return rendezVousRepository.save(existing);
+            RendezVous updated = rendezVousRepository.save(existing);
+            notifyIfAvailable();
+            return updated;
         });
     }
 
@@ -39,5 +47,14 @@ public class RendezVousService {
         }
         rendezVousRepository.deleteById(id);
         return true;
+    }
+
+    private void notifyIfAvailable() {
+        try {
+            if (notificationClient != null) {
+                notificationClient.ping();
+            }
+        } catch (Exception ignored) {
+        }
     }
 }

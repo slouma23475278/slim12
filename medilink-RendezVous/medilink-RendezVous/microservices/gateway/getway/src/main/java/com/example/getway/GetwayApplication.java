@@ -24,6 +24,7 @@ public class GetwayApplication {
 				.route("ordenance", r -> r.path("/ordenance/**").uri("lb://ORDENANCE"))
 				.route("paiement", r -> r.path("/paiement/**").uri("lb://PAIEMENT"))
 				.route("user", r -> r.path("/user/**").uri("lb://USER"))
+				.route("node", r -> r.path("/node/**").uri("http://localhost:8090"))
 				.build();
 	}
 }

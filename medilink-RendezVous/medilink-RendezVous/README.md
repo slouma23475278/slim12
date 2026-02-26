@@ -1,11 +1,15 @@
-# 📆 Medilink Microservices
+# 📆 Medilink Microservices (Version améliorée)
 
-Cette base contient une architecture microservices Spring Boot avec :
+Ce dépôt contient une architecture distribuée avec :
 
-- Eureka Server (service discovery)
-- API Gateway (routage des APIs)
-- Service `rendez-vous` (CRUD de rendez-vous)
-- Services `consultation`, `notification`, `ordenance`, `paiement`, `user` (enregistrés dans Eureka)
+- Microservices Spring Boot (`rendez-vous`, `notification`, `consultation`, `ordenance`, `paiement`, `user`)
+- Serveur de découverte Eureka
+- API Gateway
+- Serveur de configuration Spring Cloud Config
+- Communication inter-MS via Feign (`rendez-vous` -> `notification`)
+- Microservice additionnel **Node.js + PostgreSQL** (`lab-node-service`)
+- Base de sécurité Gateway compatible Keycloak (activable)
+- Docker Compose pour lancer l’écosystème principal
 
 ---
 
@@ -13,31 +17,68 @@ Cette base contient une architecture microservices Spring Boot avec :
 
 - Java 17
 - Maven 3.9+
+- Node.js 20+ (pour `lab-node-service` en local sans Docker)
+- Docker + Docker Compose (option recommandé)
 
 ---
 
-## 🚀 Ordre de démarrage recommandé
+## 🚀 Démarrage local (Maven)
 
-Depuis chaque dossier de microservice :
+Ordre recommandé :
 
-1. `microservices/eureka-server`
-2. `microservices/rendez-vous`
-3. `microservices/consultation`
-4. `microservices/notification`
-5. `microservices/ordenance`
-6. `microservices/paiement`
-7. `microservices/user`
-8. `microservices/gateway/getway`
+1. `microservices/config-server`
+2. `microservices/eureka-server`
+3. `microservices/notification`
+4. `microservices/rendez-vous`
+5. `microservices/consultation`
+6. `microservices/ordenance`
+7. `microservices/paiement`
+8. `microservices/user`
+9. `microservices/gateway/getway`
 
-Exemple :
+Commande standard dans chaque dossier :
 
 ```bash
 mvn spring-boot:run
 ```
 
+### Lancer le microservice Node + PostgreSQL
+
+```bash
+# PostgreSQL (Docker rapide)
+docker run --name medilink-pg -e POSTGRES_DB=medilink -e POSTGRES_USER=medilink -e POSTGRES_PASSWORD=medilink -p 5432:5432 -d postgres:16
+
+# Node service
+cd microservices/lab-node-service
+npm install
+node index.js
+```
+
 ---
 
-## 🔗 Endpoints disponibles (service rendez-vous)
+## 🐳 Démarrage dockerisé
+
+```bash
+docker compose up --build
+```
+
+Fichier: `docker-compose.yml`.
+
+---
+
+## 🔐 Sécurité (Keycloak)
+
+La sécurité Gateway est prête mais désactivée par défaut.
+
+- `security.keycloak.enabled=false` (par défaut)
+- Pour activer: passer à `true` et démarrer Keycloak (`http://localhost:8180`)
+- Issuer URI configuré pour le realm `medilink`
+
+---
+
+## 🔗 Endpoints clés
+
+### Service rendez-vous
 
 ```http
 GET    /rendezvous
@@ -56,12 +97,25 @@ Exemple payload :
 }
 ```
 
-Valeurs `status` : `PENDING`, `CONFIRMED`, `CANCELED`.
+### Notification (utilisé par Feign)
+
+```http
+GET /notification/ping
+```
+
+### Node service
+
+```http
+GET  /node-health
+GET  /notes
+POST /notes
+```
 
 ---
 
 ## 🌐 Ports
 
+- Config Server: `8888`
 - Eureka Server: `8761`
 - Gateway: `8560`
 - Rendez-vous: `8030`
@@ -70,6 +124,9 @@ Valeurs `status` : `PENDING`, `CONFIRMED`, `CANCELED`.
 - Ordenance: `8060`
 - Paiement: `8070`
 - User: `8081`
+- Node service: `8090`
+- PostgreSQL: `5432`
+- Keycloak: `8180`
 
 ---
 
